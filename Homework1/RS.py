@@ -5,13 +5,15 @@ from sympy.abc import x
 
 
 def get_binary():
+    is_number = False
     with open("input.txt", "r") as fd:
         content = fd.read()
         if content.isdigit():
             binary = int(content)
+            is_number = True
         else:
             binary = ''.join(format(ord(character), "b") for character in content)
-    return binary
+    return binary, is_number
 
 
 def compute_polinom(x, constants):
@@ -45,7 +47,7 @@ def compute_reminders(number, prime):
 
 
 def encoding(prime, s=1):
-    binary = get_binary()
+    binary, is_number = get_binary()
     if type(binary) is int:
         coef_array = compute_reminders(binary, prime)
     else:
@@ -55,7 +57,7 @@ def encoding(prime, s=1):
     # len(coef_array) = k - 1, so len(coef_array) + 2 * s will be actually equal to n - 1 instead of n
     # range(1,x) also counts up to x - 1, so in the end we should add 2 to len(coef_array) + 2 * s
     print("coefs:", coef_array)
-    return result
+    return result, is_number
 
 
 def compute_free_coef(z, a, prime, x=0):
@@ -103,7 +105,7 @@ def polynomial_interpolation(a, z, prime):
     return results
 
 
-def decoding(output, prime, s=1):
+def decoding(output, prime, is_number, s=1):
     n = len(output)
     k = len(output) - 2 * s
     # get samples until free_coeficient is 0
@@ -114,12 +116,15 @@ def decoding(output, prime, s=1):
         free_coef = compute_free_coef(output, a, prime)
     coefs = polynomial_interpolation(a, output, prime)
     coefs.pop()
-    coefs.reverse()
-    return getNumber(prime, coefs)
+    if is_number:
+        coefs.reverse()
+        print(coefs)
+        return getNumber(prime, coefs)
+    return coefs
 
 
 prime = 11
-output = encoding(prime)
+output, is_number = encoding(prime)
 print("encoding:", output)
 # z = [9, 0, 6, 5, 7]
-print("decoding:", decoding(output, prime))
+print("decoding:", decoding(output, prime, is_number))
