@@ -1,4 +1,4 @@
-import sympy, sys
+import sympy, sys, time
 
 
 def generate_pqr_primes():
@@ -28,7 +28,7 @@ def get_message(path):
     return message
 
 
-def encrypt_message(path, n):
+def encrypt_message(path, n, e):
     message = get_message(path)
     message = int.from_bytes(message, byteorder=sys.byteorder)
     encrypted = pow(message, e, n)
@@ -38,27 +38,56 @@ def encrypt_message(path, n):
 
 
 def garner(y, d, p, q, r):
-    return
+    start = time.time()
+    mp = pow(y % p, d % (p - 1), p)
+    mq = pow(y % q, d % (q - 1), q)
+    mr = pow(y % r, d % (r - 1), r)
+    x = mp
+    alpha = (((mq - x) % q) * sympy.mod_inverse(mp, q)) % q
+    x += alpha * mp
+    alpha = (((mr - x) % r) * sympy.mod_inverse(mp * mq, r)) % r
+    x += alpha * mp * mq
+    end = time.time() - start
+    return x, end
 
 
-p, q, r = generate_pqr_primes()
-e = pow(2, 16) + 1
-n = p * q * r
-phi_n = (p - 1) * (q - 1) * (r - 1)
-condition = gcd(e, phi_n)
-while condition != 1:
-    p, q, r = generate_pqr_primes()
-    n = p * q * r
-    phi_n = (p - 1) * (q - 1) * (r - 1)
-    condition(e, phi_n)
-d = sympy.mod_inverse(e, phi_n)
-y = encrypt_message("message.txt", n)
-print("p:", p)
-print("q:", q)
-print("r:", r)
-print("e:", e)
-print("d:", d)
-print("m:", int.from_bytes(get_message(path="message.txt"), byteorder=sys.byteorder))
-print("y:", y)
-print("y decrypted with python library:", pow(y, d, n))
-print("y decrypted with Garner:", garner())
+def decrypt(y, d, n):
+    start = time.time()
+    x = pow(y, d, n)
+    end = time.time() - start
+    return x, end
+
+
+def multiprime_RSA(iterations=10):
+    average_time = 0
+    for iteration in range(iterations):
+        print("Iteration:", iteration)
+        p, q, r = generate_pqr_primes()
+        e = pow(2, 16) + 1
+        n = p * q * r
+        phi_n = (p - 1) * (q - 1) * (r - 1)
+        condition = gcd(e, phi_n)
+        while condition != 1:
+            p, q, r = generate_pqr_primes()
+            n = p * q * r
+            phi_n = (p - 1) * (q - 1) * (r - 1)
+            condition(e, phi_n)
+        d = sympy.mod_inverse(e, phi_n)
+        y = encrypt_message("message.txt", n, e)
+        # print("p:", p)
+        # print("q:", q)
+        # print("r:", r)
+        # print("e:", e)
+        # print("d:", d)
+        # print("m:", int.from_bytes(get_message(path="message.txt"), byteorder=sys.byteorder))
+        # print("y:", y)
+        x_decrypt, time_decrypt = decrypt(y, d, n)
+        x_garner, time_garner = garner(y, d, p, q, r)
+        print("\ty decrypted with python library:", x_decrypt)
+        print("\ty decrypted with Garner:", x_garner)
+        print("\tgarner vs python function time:", time_decrypt/time_garner)
+        average_time += time_decrypt/time_garner
+    print(average_time/10)
+
+
+multiprime_RSA()
