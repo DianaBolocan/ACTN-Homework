@@ -1,11 +1,20 @@
 from Homework3 import solovay_strassen
 
 
-def compute_s(mersen_number, stop=1):
+def compute_s(n, mersenne_number):
     s = 4
     count = 1
-    while count != stop:
-        s = (pow(s, 2) - 2) % mersen_number
+    while count != n - 1:
+        s = "{0:b}".format(pow(s, 2) - 2)  # % mersenne_number
+        x1 = 0
+        if len(s) <= n:
+            x0 = int(s, 2)
+        else:
+            x0 = int(s[-n:], 2)
+            x1 = int(s[:-n], 2)
+        s = x0 + x1
+        if s >= mersenne_number:
+            s -= mersenne_number
         count += 1
     return s
 
@@ -18,17 +27,17 @@ def run(n=None):
             print(e)
             return False
     if not solovay_strassen.run(n):
-        print("Not Mersen number")
+        print("Not Mersenne number")
         return False
-    mersen_number = pow(2, n) - 1
-    print("Number:", mersen_number)
-    s = compute_s(mersen_number, n)
+    mersenne_number = pow(2, n) - 1
+    print("Number:", mersenne_number)
+    s = compute_s(n, mersenne_number)
     if s != 0:
-        print("Not Mersen number")
+        print("Not Mersenne number")
         return False
-    print("Mersen number")
+    print("Mersenne number")
     return True
 
 
 if __name__ == '__main__':
-    run(7)
+    run(13)

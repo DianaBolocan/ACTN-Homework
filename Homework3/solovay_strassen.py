@@ -1,6 +1,4 @@
 import random
-import sympy
-from Homework2 import multiprimeRSA as algorithm
 
 
 def jacobi_symbol(a, n):
@@ -17,7 +15,6 @@ def jacobi_symbol(a, n):
             a //= 2
             if (n % 8 == 3) or (n % 8 == 5):
                 j = -j
-
         # Legea reciprocitatii
         a, n = n, a
         if a % 4 == 3 and n % 4 == 3:
@@ -29,32 +26,25 @@ def jacobi_symbol(a, n):
         return 0
 
 
-def run(n=None):
+def run(n=None, k=100):
     if not n:
         try:
             n = int(input("N: "))
         except Exception as e:
             print(e)
             return False
-    a = random.randint(2, n - 2)
-    print("a:", a)
-    if algorithm.gcd(n, a) != 1:
-        print("(1): n compus")
+    if n % 2 == 0:
+        print("Not prime number")
         return False
-    rest = pow(a, (n - 1) * sympy.mod_inverse(2, n), n)
-    print("r:", rest)
-    if rest not in [1, n - 1]:
-        print("(2): n compus")
-        return False
-    symbol = jacobi_symbol(a, n)
-    print("Jacoby symbol:", symbol)
-    print("rest:",rest)
-    if symbol != rest:
-        print("(3): n compus")
-        return False
-    print("n prim")
+    for number in range(k):
+        a = random.randint(2, n - 1)
+        symbol = jacobi_symbol(a, n)
+        if symbol == 0 or pow(a, (n - 1) // 2, n) != symbol % n:
+            print("Not prime number")
+            return False
+    print("Prime number")
     return True
 
 
 if __name__ == '__main__':
-    run()
+    run(31)
